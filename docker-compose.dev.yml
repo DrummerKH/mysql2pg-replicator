@@ -1,0 +1,30 @@
+version: '2.1'
+
+services:
+
+    # Project deploy container
+    gdm-replicator:
+        build:
+            context: .
+        env_file: .env
+        volumes:
+            - .:/var/www/gdm-replicator
+
+    gdm-replicator-ruby:
+        restart: unless-stopped
+        build:
+            context: .
+        env_file: .env
+        volumes:
+            - .:/var/www/gdm-replicator
+
+    gdm-replicator-redis:
+        restart: unless-stopped
+        build:
+            context: .
+        env_file: .env
+
+networks:
+  default:
+    external:
+      name: docker_default

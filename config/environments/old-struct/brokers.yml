@@ -1,0 +1,13 @@
+---
+
+# Config of brokers
+#
+# Structure is
+# :BROKER_NAME
+#   :platforms
+#     :PLATFORM_NAME : [ARRAY OF SERVERS]
+#
+
+:gdm:
+  :platforms:
+    :mt4: [demo30]

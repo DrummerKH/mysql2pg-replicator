@@ -1,0 +1,579 @@
+---
+
+# Rules for corresponds source tables and fields with destination tables and fields
+# Structure:
+#  PLATFORM_NAME:
+#     The name pf source table where has been done changes
+#     SOURCE_TABLE_NAME:
+#
+#       The key specifies source table name from where get data
+#       :src_table: SOURCE _TABLE_NAME
+#
+#       The key specifies destination table name to where must replicated the changes
+#       :dst_table: DESTINATION_TABLE_NAME
+#
+#       The key specifies primary key field in the destination table
+#       :dst_pk: DESTINATION_PRIMARY_KEY_FIELD
+#
+#       The key specifies platform pointer field on destination table
+#       :platform_pointer: DESTINATION_FIELD
+#
+#       The key specifies correspond of source and destination fields as
+#       array of hashes with fields of source table as hash keys
+#       and destination table fields as values
+#       :fields_corresponds:
+#         SOURCE_FIELD: DESTINATION_FIELD
+#         ...
+#
+
+:mt4:
+  :traders:
+    :use_cache: true
+
+    :src:
+      :table: MT4_USERS
+      :pk: LOGIN
+      :updated_at_field: UPDATED_AT
+
+    :dst:
+      :updated_at_field: updated_at
+      :schema: mt4
+      :table: traders
+      :pk: account
+      :platform_pointer_field: platform_pointer
+
+    :fields_corresponds:
+      :LOGIN: account
+      :GROUP: group
+      :ENABLE: enabled
+      :ENABLE_CHANGE_PASS: enable_change_pass
+      :ENABLE_READONLY: readonly
+      :NAME: name
+      :COUNTRY: country
+      :CITY: city
+      :STATE: state
+      :ZIPCODE: zip
+      :ADDRESS: address
+      :PHONE: phone
+      :EMAIL: email
+      :COMMENT: comment
+      :STATUS: status
+      :UPDATED_AT: updated_at
+      :REGDATE: created_at
+      :LEVERAGE: leverage
+      :AGENT_ACCOUNT: agent_account
+      :BALANCE: balance
+      :CREDIT: credit
+      :EQUITY: equity
+      :MARGIN: margin
+      :MARGIN_LEVEL: margin_level
+      :MARGIN_FREE: margin_free
+      :CURRENCY: currency
+      :SEND_REPORTS: send_analytics
+
+  :credits:
+    :use_cache: true
+    :set_id:
+      :source_entity: traders
+    :actions:
+      - insert
+      - update
+
+    :src:
+      :table: MT4_TRADES
+      :pk: TICKET
+      :updated_at_field: UPDATED_AT
+      :condition: "`CMD` = 7 AND `PROFIT` > 0"
+
+    :dst:
+      :updated_at_field: updated_at
+      :schema: public
+      :table: credits
+      :pk: internal_id
+      :platform_pointer_field: platform_pointer
+
+    :fields_corresponds:
+      :TICKET: internal_id
+      :LOGIN: internal_trader_id
+      :OPEN_TIME: created_at
+      :PROFIT: amount
+      :COMMENT: comment
+      :UPDATED_AT: updated_at
+
+  :deposits:
+    :use_cache: true
+    :set_id:
+      :source_entity: traders
+    :actions:
+      - insert
+      - update
+
+    :src:
+      :table: MT4_TRADES
+      :pk: TICKET
+      :updated_at_field: UPDATED_AT
+      :condition: "`CMD` = 6 AND `PROFIT` > 0"
+
+    :dst:
+      :updated_at_field: updated_at
+      :schema: public
+      :table: deposits
+      :pk: internal_id
+      :platform_pointer_field: platform_pointer
+
+    :fields_corresponds:
+      :TICKET: internal_id
+      :LOGIN: internal_trader_id
+      :OPEN_TIME: created_at
+      :PROFIT: amount
+      :COMMENT: comment
+      :UPDATED_AT: updated_at
+
+  :withdrawals:
+    :use_cache: true
+    :set_id:
+      :source_entity: traders
+    :actions:
+      - insert
+      - update
+
+    :src:
+      :table: MT4_TRADES
+      :pk: TICKET
+      :updated_at_field: UPDATED_AT
+      :condition: "`CMD` = 6 AND `PROFIT` < 0"
+
+    :dst:
+      :updated_at_field: updated_at
+      :schema: public
+      :table: withdrawals
+      :pk: internal_id
+      :platform_pointer_field: platform_pointer
+
+    :fields_corresponds:
+      :TICKET: internal_id
+      :LOGIN: internal_trader_id
+      :OPEN_TIME: created_at
+      :PROFIT: amount
+      :COMMENT: comment
+      :UPDATED_AT: updated_at
+
+  :orders:
+    :use_cache: true
+
+    :set_id:
+      :source_entity: traders
+
+    :src:
+      :table: MT4_TRADES
+      :pk: TICKET
+      :updated_at_field: UPDATED_AT
+      :condition: "`CMD` IN (0,1,2,3,4,5)"
+
+    :dst:
+      :updated_at_field: updated_at
+      :schema: mt4
+      :table: orders
+      :pk: internal_id
+      :platform_pointer_field: platform_pointer
+
+    :fields_corresponds:
+      :TICKET: internal_id
+      :LOGIN: internal_trader_id
+      :SYMBOL: currency
+      :DIGITS: digits
+      :CMD: type
+      :VOLUME: volume
+      :OPEN_TIME: created_at
+      :OPEN_PRICE: open_price
+      :SL: sl
+      :TP: tp
+      :CLOSE_TIME: closed_at
+      :COMMISSION: commission
+      :COMMISSION_AGENT: commission_agent
+      :SWAPS: swaps
+      :CLOSE_PRICE: close_price
+      :PROFIT: profit
+      :COMMENT: comment
+      :MARGIN_RATE: margin_rate
+      :UPDATED_AT: updated_at
+
+
+:trado:
+  :regular_opened:
+    :use_cache: true
+    :display_name: orders
+    :extract_period: 5
+    :set_id:
+      :source_entity: users_regs
+    :actions:
+      - insert
+      - update
+
+    :src:
+      :url: /v1/admin/trades/regular/opened
+      :after_field: openedAfter
+      :before_field: openedBefore
+      :api_type: admin
+      :pk: tradeId
+      :updated_at_field: openTime
+
+    :dst:
+      :updated_at_field: updated_at
+      :schema: trado
+      :table: orders
+      :pk: internal_id
+      :platform_pointer_field: platform_pointer
+      :condition: "closed_at IS NULL AND type = 'regular'"
+      :custom_fields:
+        :type: regular
+
+    :fields_corresponds:
+      :tradeId: internal_id
+      :userId: internal_trader_id
+      :tradableAssetId: asset_id
+      :openTime:
+        - created_at
+        - updated_at
+      :openPrice: open_price
+      :amount: amount
+      :isCall: is_call
+      :optionType: option_type
+      :balance: balance
+      :agentId: agent_id
+
+  :private_opened:
+    :use_cache: true
+    :display_name: orders
+    :extract_period: 5
+    :set_id:
+      :source_entity: users_regs
+    :actions:
+      - insert
+      - update
+
+    :src:
+      :url: /v1/admin/trades/private/opened
+      :after_field: openedAfter
+      :before_field: openedBefore
+      :api_type: admin
+      :pk: tradeId
+      :updated_at_field: openTime
+
+    :dst:
+      :updated_at_field: updated_at
+      :schema: trado
+      :table: orders
+      :pk: internal_id
+      :platform_pointer_field: platform_pointer
+      :condition: "closed_at IS NULL AND type = 'private'"
+      :custom_fields:
+        :type: private
+
+    :fields_corresponds:
+      :tradeId: internal_id
+      :userId: internal_trader_id
+      :tradableAssetId: asset_id
+      :openTime:
+        - created_at
+        - updated_at
+      :openPrice: open_price
+      :amount: amount
+      :isCall: is_call
+      :optionType: option_type
+      :balance: balance
+      :agentId: agent_id
+
+
+  :regular_closed:
+    :use_cache: true
+    :display_name: orders
+    :extract_period: 5
+    :set_id:
+      :source_entity: users_regs
+    :actions:
+      - insert
+      - update
+
+    :src:
+      :url: /v1/admin/trades/regular/closed
+      :after_field: closedAfter
+      :before_field: closedBefore
+      :api_type: admin
+      :pk: tradeId
+      :updated_at_field: closeTime
+
+    :dst:
+      :updated_at_field: updated_at
+      :schema: trado
+      :table: orders
+      :pk: internal_id
+      :platform_pointer_field: platform_pointer
+      :condition: "closed_at IS NOT NULL AND type = 'regular'"
+      :custom_fields:
+        :type: regular
+
+    :fields_corresponds:
+      :tradeId: internal_id
+      :userId: internal_trader_id
+      :tradableAssetId: asset_id
+      :payout: profit
+      :openTime: created_at
+      :closeTime:
+        - closed_at
+        - updated_at
+      :openPrice: open_price
+      :closePrice: close_price
+      :isCall: is_call
+      :optionType: option_type
+      :amount: amount
+      :balance: balance
+      :agentId: agent_id
+
+  :private_closed:
+    :use_cache: true
+    :display_name: orders
+    :extract_period: 5
+    :set_id:
+      :source_entity: users_regs
+    :actions:
+      - insert
+      - update
+
+    :src:
+      :url: /v1/admin/trades/private/closed
+      :after_field: closedAfter
+      :before_field: closedBefore
+      :api_type: admin
+      :pk: tradeId
+      :updated_at_field: closeTime
+
+    :dst:
+      :updated_at_field: updated_at
+      :schema: trado
+      :table: orders
+      :pk: internal_id
+      :platform_pointer_field: platform_pointer
+      :condition: "closed_at IS NOT NULL AND type = 'private'"
+      :custom_fields:
+        :type: private
+
+    :fields_corresponds:
+      :tradeId: internal_id
+      :userId: internal_trader_id
+      :tradableAssetId: asset_id
+      :payout: profit
+      :openTime: created_at
+      :closeTime:
+        - closed_at
+        - updated_at
+      :openPrice: open_price
+      :closePrice: close_price
+      :isCall: is_call
+      :optionType: option_type
+      :amount: amount
+      :balance: balance
+      :agentId: agent_id
+
+  :users_regs:
+    :use_cache: true
+    :cache_key: users
+    :display_name: users
+    :extract_period: 5
+    :actions:
+      - insert
+
+    :src:
+      :url: /v1/crm/users
+      :after_field: registeredAfter
+      :before_field: registeredBefore
+      :api_type: crm
+      :pk: userId
+      :updated_at_field: registrationDate
+
+    :dst:
+      :updated_at_field: updated_at
+      :schema: trado
+      :table: traders
+      :pk: account
+      :platform_pointer_field: platform_pointer
+
+    :fields_corresponds:
+      :userId: account
+      :registrationDate:
+        - created_at
+        - updated_at
+      :balance: balance
+      :lastLogin: last_login
+      :isReal: is_real
+      :billingCurrency: currency
+      :email: email
+      :firstName: first_name
+      :lastName: last_name
+      :phone: phone
+      :registrationIp: registration_ip
+
+  :users_updates:
+    :use_cache: true
+    :cache_key: users
+    :display_name: users
+    :extract_period: 5
+    :actions:
+      - update
+
+    :src:
+      :url: /v1/crm/users
+      :after_field: lastupdatedAfter
+      :before_field: lastupdatedBefore
+      :api_type: crm
+      :pk: customerId
+      :updated_at_field: lastUpdated
+
+    :dst:
+      :updated_at_field: updated_at
+      :schema: trado
+      :table: traders
+      :pk: account
+      :platform_pointer_field: platform_pointer
+
+    :fields_corresponds:
+      :customerId: account
+      :registrationDate: created_at
+      :balance: balance
+      :lastLoginTS: last_login
+      :realUser: is_real
+      :billingCurrency: currency
+      :email: email
+      :firstName: first_name
+      :lastName: last_name
+      :phone: phone
+      :registrationIp: registration_ip
+      :lastUpdated: updated_at
+
+  :real_balances:
+    :use_cache: true
+    :cache_key: users
+    :display_name: users
+    :extract_period: 5
+    :actions:
+      - update
+
+    :src:
+      :url: /v1/crm/users/balance/real
+      :after_field: lastUpdatedAfter
+      :before_field: lastUpdatedBefore
+      :api_type: crm
+      :pk: userId
+      :updated_at_field: LastUpdateTS
+
+    :dst:
+      :updated_at_field: balance_updated_at
+      :schema: trado
+      :table: traders
+      :pk: account
+      :condition: "is_real = true"
+      :platform_pointer_field: platform_pointer
+
+    :fields_corresponds:
+      :userId: account
+      :userId: account
+      :balance: balance
+      :LastUpdateTS: balance_updated_at
+
+  :demo_balances:
+    :use_cache: true
+    :cache_key: users
+    :display_name: users
+    :extract_period: 5
+    :actions:
+      - update
+
+    :src:
+      :url: /v1/crm/users/balance/demo
+      :after_field: lastUpdatedAfter
+      :before_field: lastUpdatedBefore
+      :api_type: crm
+      :pk: userId
+      :updated_at_field: LastUpdateTS
+
+    :dst:
+      :updated_at_field: balance_updated_at
+      :schema: trado
+      :table: traders
+      :pk: account
+      :condition: "is_real = false"
+      :platform_pointer_field: platform_pointer
+
+    :fields_corresponds:
+      :userId: account
+      :userId: account
+      :balance: balance
+      :LastUpdateTS: balance_updated_at
+
+  :bonuses:
+    :use_cache: true
+    :extract_period: 5
+    :set_id:
+      :source_entity: users_regs
+    :actions:
+      - update
+      - insert
+
+    :src:
+      :url: /v1/crm/bonuses
+      :after_field: lastUpdatedAfter
+      :before_field: lastUpdatedBefore
+      :api_type: crm
+      :pk: bonusId
+      :updated_at_field: bonusLastUpdate
+
+    :dst:
+      :updated_at_field: updated_at
+      :schema: trado
+      :table: bonuses
+      :pk: internal_id
+      :platform_pointer_field: platform_pointer
+
+    :fields_corresponds:
+      :bonusState: state
+      :bonusDate: created_at
+      :amount: amount
+      :bonusLastUpdate: updated_at
+      :bonusReceivedDate: received_at
+      :bonusId: internal_id
+      :userId: internal_trader_id
+      :billingCurrency: currency
+      :definitionId: definition_id
+      :lastUpdateComment: comment
+
+
+
+:special:
+
+  # For replication real time quotes
+  # The source database chosen randomly
+  :quotes:
+    :deletion: true
+
+    :src:
+      :provider: MT4
+      :db: gdm_mt4_live21
+      :table: MT4_PRICES
+      :pk: SYMBOL
+      :updated_at_field: TIME
+
+    :dst:
+      :updated_at_field: updated_at
+      :db: gtr
+      :schema: configuration
+      :table: quotes
+      :pk: currency_pair
+
+    :fields_corresponds:
+      :SYMBOL: currency_pair
+      :BID: bid
+      :ASK: ask
+      :HIGH: high
+      :LOW: low
+      :DIRECTION: direction
+      :TIME: updated_at

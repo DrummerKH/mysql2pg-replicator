@@ -1,0 +1,40 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    addressable (2.5.1)
+      public_suffix (~> 2.0, >= 2.0.2)
+    amq-protocol (2.2.0)
+    bunny (2.7.0)
+      amq-protocol (>= 2.2.0)
+    connection_pool (2.2.1)
+    curb (0.9.3)
+    daemons (1.2.3)
+    hiredis (0.6.1)
+    json (1.8.3)
+    logger (1.2.8)
+    mysql2 (0.4.4)
+    pg (0.18.4)
+    public_suffix (2.0.5)
+    readthis (2.1.0)
+      connection_pool (~> 2.1)
+      redis (>= 3.0, < 5.0)
+    redis (3.3.3)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  addressable
+  bunny
+  curb
+  daemons
+  hiredis
+  json
+  logger
+  mysql2
+  pg
+  readthis
+  redis (~> 3.2)
+
+BUNDLED WITH
+   1.14.6

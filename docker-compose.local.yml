@@ -1,0 +1,28 @@
+version: '2.1'
+
+services:
+
+    # Project Name #
+    gdm-replicator:
+        build:
+            context: ./projects/gdm-replicator
+        env_file: ./projects/gdm-replicator/.env.local
+        volumes:
+            - ./projects/gdm-replicator:/var/www/gdm-replicator
+
+    gdm-replicator-ruby:
+        build:
+            context: ./projects/gdm-replicator
+        env_file: ./projects/gdm-replicator/.env.local
+        volumes:
+            - ./projects/gdm-replicator:/var/www/gdm-replicator
+
+    gdm-replicator-redis:
+        build:
+            context: ./projects/gdm-replicator
+        env_file: ./projects/gdm-replicator/.env.local
+
+networks:
+  default:
+    external:
+      name: docker_default

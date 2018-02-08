@@ -1,0 +1,65 @@
+---
+
+# Rules for corresponds source tables and fields with destination tables and fields
+# Structure:
+#  PLATFORM_NAME:
+#     The name pf source table where has been done changes
+#     SOURCE_TABLE_NAME:
+#
+#       The key specifies source table name from where get data
+#       :src_table: SOURCE _TABLE_NAME
+#
+#       The key specifies destination table name to where must replicated the changes
+#       :dst_table: DESTINATION_TABLE_NAME
+#
+#       The key specifies primary key field in the destination table
+#       :dst_pk: DESTINATION_PRIMARY_KEY_FIELD
+#
+#       The key specifies platform pointer field on destination table
+#       :platform_pointer: DESTINATION_FIELD
+#
+#       The key specifies correspond of source and destination fields as
+#       array of hashes with fields of source table as hash keys
+#       and destination table fields as values
+#       :fields_corresponds:
+#         SOURCE_FIELD: DESTINATION_FIELD
+#         ...
+#
+
+:mt4:
+  :mt4_users:
+    :dst_schema: demo
+    :src_table: MT4_USERS
+    :src_pk: LOGIN
+    :dst_table: platform_accounts
+    :dst_pk: account
+    :platform_pointer_field: platform_pointer
+    :updated_at_field: MODIFY_TIME
+
+    :fields_corresponds:
+      :LOGIN: account
+      :GROUP: group
+      :ENABLE: enabled
+      :ENABLE_CHANGE_PASS: enable_change_pass
+      :ENABLE_READONLY: readonly
+      :NAME: name
+      :COUNTRY: country
+      :CITY: city
+      :STATE: state
+      :ZIPCODE: zip
+      :ADDRESS: address
+      :PHONE: phone
+      :EMAIL: email
+      :COMMENT: comment
+      :STATUS: status
+      :MODIFY_TIME: updated_at
+      :REGDATE: created_at
+      :LEVERAGE: leverage
+      :AGENT_ACCOUNT: agent_account
+      :BALANCE: balance
+      :CREDIT: credit
+      :EQUITY: equity
+      :MARGIN: margin
+      :MARGIN_LEVEL: margin_level
+      :MARGIN_FREE: margin_free
+      :CURRENCY: currency
